@@ -1,0 +1,35 @@
+#规范日期字符串为xxxx/xx/xx xx:xx
+update news set datetime=replace(datetime, '年' , '/') where datetime like '%年%';
+update news set datetime=replace(datetime, '月' , '/') where datetime like '%月%';
+update news set datetime=replace(datetime, '日' , '') where datetime like '%日%';
+#规范月份
+update news set datetime=replace(datetime, '/1/' , '/01/') where datetime like '%/1/%';
+update news set datetime=replace(datetime, '/2/' , '/02/') where datetime like '%/2/%';
+update news set datetime=replace(datetime, '/3/' , '/03/') where datetime like '%/3/%';
+update news set datetime=replace(datetime, '/4/' , '/04/') where datetime like '%/4/%';
+update news set datetime=replace(datetime, '/5/' , '/05/') where datetime like '%/5/%';
+update news set datetime=replace(datetime, '/6/' , '/06/') where datetime like '%/6/%';
+update news set datetime=replace(datetime, '/7/' , '/07/') where datetime like '%/7/%';
+update news set datetime=replace(datetime, '/8/' , '/08/') where datetime like '%/8/%';
+update news set datetime=replace(datetime, '/9/' , '/09/') where datetime like '%/9/%';
+#规范日
+update news set datetime=replace(datetime, '/1 ' , '/01 ') where datetime like '%/1 %';
+update news set datetime=replace(datetime, '/2 ' , '/02 ') where datetime like '%/2 %';
+update news set datetime=replace(datetime, '/3 ' , '/03 ') where datetime like '%/3 %';
+update news set datetime=replace(datetime, '/4 ' , '/04 ') where datetime like '%/4 %';
+update news set datetime=replace(datetime, '/5 ' , '/05 ') where datetime like '%/5 %';
+update news set datetime=replace(datetime, '/6 ' , '/06 ') where datetime like '%/6 %';
+update news set datetime=replace(datetime, '/7 ' , '/07 ') where datetime like '%/7 %';
+update news set datetime=replace(datetime, '/8 ' , '/08 ') where datetime like '%/8 %';
+update news set datetime=replace(datetime, '/9 ' , '/09 ') where datetime like '%/9 %';
+#规范小时
+update news set datetime=replace(datetime, ' 1:' , ' 01:') where datetime like '% 1:%';
+update news set datetime=replace(datetime, ' 2:' , ' 02:') where datetime like '% 2:%';
+update news set datetime=replace(datetime, ' 3:' , ' 03:') where datetime like '% 3:%';
+update news set datetime=replace(datetime, ' 4:' , ' 04:') where datetime like '% 4:%';
+update news set datetime=replace(datetime, ' 5:' , ' 05:') where datetime like '% 5:%';
+update news set datetime=replace(datetime, ' 6:' , ' 06:') where datetime like '% 6:%';
+update news set datetime=replace(datetime, ' 7:' , ' 07:') where datetime like '% 7:%';
+update news set datetime=replace(datetime, ' 8:' , ' 08:') where datetime like '% 8:%';
+update news set datetime=replace(datetime, ' 9:' , ' 09:') where datetime like '% 9:%';
+
