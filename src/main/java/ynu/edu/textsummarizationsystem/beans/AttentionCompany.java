@@ -1,54 +1,63 @@
 package ynu.edu.textsummarizationsystem.beans;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
 import java.io.Serializable;
 
 
-@Entity
-@Table(name = "attention_company")
+@Document(collection="attention_company")
+@TypeAlias("")
 public class AttentionCompany implements Serializable{
-    private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private long id;
-    @Column(name = "userid")
+    private Integer id;
+    @Field("userid")
     private Integer userid;
-    @Column(name = "company")
     private String company;
 
-    public long getId() {
+    public Integer getId() {
         return id;
-    }
-
-    public Integer getUserid() {
-        return userid;
-    }
-
-    public String getCompany() {
-        return company;
     }
 
     public void setId(Integer id) {
         this.id = id;
     }
 
+    public Integer getUserid() {
+        return userid;
+    }
+
     public void setUserid(Integer userid) {
         this.userid = userid;
+    }
+
+    public String getCompany() {
+        return company;
     }
 
     public void setCompany(String company) {
         this.company = company;
     }
 
+
+    public AttentionCompany(Integer id, Integer userid, String company) {
+        this.id = id;
+        this.userid = userid;
+        this.company = company;
+    }
+
     public AttentionCompany() {
     }
 
-    public AttentionCompany( Integer userid, String company) {
-        this.userid = userid;
-        this.company = company;
+    @Override
+    public String toString() {
+        return "AttentionCompany{" +
+                "id=" + id +
+                ", userid=" + userid +
+                ", company='" + company + '\'' +
+                '}';
     }
 }

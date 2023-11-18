@@ -2,24 +2,39 @@ package ynu.edu.textsummarizationsystem.controller;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 import ynu.edu.textsummarizationsystem.beans.AttentionCompany;
 import ynu.edu.textsummarizationsystem.beans.News;
-import ynu.edu.textsummarizationsystem.mapper.AttentionCompanyMapper;
-import ynu.edu.textsummarizationsystem.mapper.NewsMapper;
+import ynu.edu.textsummarizationsystem.beans.counters;
+import ynu.edu.textsummarizationsystem.dao.AttentionCompanyRepository;
+import ynu.edu.textsummarizationsystem.dao.CountersRepository;
+import ynu.edu.textsummarizationsystem.dao.NewsRepository;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:8001")
 @RestController
 @RequestMapping("attentioncompany")
-public class AttentionCompanyController {
+public class AttentionCompanyController{
+
     @Autowired
-    private AttentionCompanyMapper attentionCompanyMapper;
+    private AttentionCompanyRepository attentionCompanyRepository;
     @Autowired
-    private NewsMapper newsMapper;
+    private CountersRepository countersRepository;
+
+    //注入MongoTemplate
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
 
     /**
      * 取消收藏的company
@@ -42,15 +57,18 @@ public class AttentionCompanyController {
             resp.put("remind","公司名不能为空!");
             return resp;
         }
-        QueryWrapper<AttentionCompany> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("userid",userid);
-        queryWrapper.eq("company",company);
-        Integer t = attentionCompanyMapper.delete(queryWrapper);
-        if(t==0) {
+        Integer  userid1 = Integer.parseInt(userid);
+        Criteria criteria = Criteria.where("userid").is(userid1).and("company").is(company);
+        Query query = new Query(criteria);
+        // 输出删除前的文档数量
+        long countBeforeDelete = mongoTemplate.count(query, AttentionCompany.class);
+        System.out.println(countBeforeDelete);
+        if(countBeforeDelete == 0){
             resp.put("state", "202");
             resp.put("remind", "你还未收藏该公司！");
             return resp;
         }
+        mongoTemplate.remove(query,AttentionCompany.class);
         resp.put("state","200");
         resp.put("remind","取消收藏成功！");
         return resp;
@@ -75,9 +93,8 @@ public class AttentionCompanyController {
             resp.put("remind","公司名不能为空");
             return resp;
         }
-        QueryWrapper<News> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("company",company);
-        List<News> records = newsMapper.selectList(queryWrapper);
+        Query query = Query.query(Criteria.where("company").is(company));
+        List<News> records = mongoTemplate.find(query,News.class);
         Integer newscount=records.size();
         if(newscount==0){
             resp.put("state","202");
@@ -137,16 +154,26 @@ public class AttentionCompanyController {
         }
         Integer userid1 = Integer.parseInt(userid);
         //查询该公司是否已经关注
-        QueryWrapper<AttentionCompany> queryWrapper2 = new QueryWrapper<>();
-        queryWrapper2.eq("userid",userid1);
-        queryWrapper2.eq("company",company);
-        List<AttentionCompany> attentionCompanies = attentionCompanyMapper.selectList(queryWrapper2);
+        Criteria criteria = Criteria.where("userid").is(userid1).and("company").is(company);
+        Query query = new Query(criteria);
+        List<AttentionCompany> attentionCompanies = mongoTemplate.find(query,AttentionCompany.class);
         if(attentionCompanies.size()!=0){
             resp.put("state","202");
             resp.put("remind","该公司已经关注过了，请勿重复关注！");
         }else{
-            AttentionCompany attentionCompany = new AttentionCompany(userid1, company);
-            attentionCompanyMapper.insert(attentionCompany);
+            //获得自增主键值
+            List<counters> all = mongoTemplate.findAll(counters.class);
+            int id = all.get(0).getAttentioncompany_value();
+            Query query2 = Query.query(Criteria.where("_id").is(all.get(0).getId()));
+            Update update = new Update();
+            update.set("attentioncompany_value", id+1);
+            mongoTemplate.updateFirst(query2, update, counters.class);
+
+            AttentionCompany attentionCompany = new AttentionCompany();
+            attentionCompany.setCompany(company);
+            attentionCompany.setUserid(userid1);
+            attentionCompany.setId(id+1);
+            attentionCompanyRepository.save(attentionCompany);
             resp.put("state","200");
             resp.put("remind","关注成功");
         }
@@ -166,10 +193,9 @@ public class AttentionCompanyController {
     public JSONObject getCompanyList(@RequestParam("userid") String userid){
 
         Integer userid1 = Integer.parseInt(userid);
-        QueryWrapper<AttentionCompany> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("userid",userid1);
+        Query query = Query.query(Criteria.where("userid").is(userid1));
         //用户关注的公司列表
-        List<AttentionCompany> attentionCompanies = attentionCompanyMapper.selectList(queryWrapper);
+        List<AttentionCompany> attentionCompanies = mongoTemplate.find(query,AttentionCompany.class);
         JSONObject resp = new JSONObject();
         if(attentionCompanies.size() == 0) {
             resp.put("state","201");
@@ -180,11 +206,9 @@ public class AttentionCompanyController {
             List<JSONObject> items_sentiment0 = new LinkedList<>();  //sentiment==0的新闻集合
             List<JSONObject> items_sentiment1 = new LinkedList<>();  //sentiment==1的新闻集合
             List<JSONObject> items_sentiment2 = new LinkedList<>();  //sentiment==2的新闻集合
-            QueryWrapper<News> queryWrapper2 = new QueryWrapper<>();
             for(AttentionCompany company:attentionCompanies){
-                queryWrapper2.clear();
-                queryWrapper2.eq("company",company.getCompany());
-                List<News> records = newsMapper.selectList(queryWrapper2);
+                Query query2 = Query.query(Criteria.where("company").is(company.getCompany()));
+                List<News> records = mongoTemplate.find(query2,News.class);
                 newscount = newscount+records.size();
                 for (News record : records) {
                     String sentiment = record.getSentiment();
@@ -219,16 +243,15 @@ public class AttentionCompanyController {
      * @param company
      * @return
      */
+    //http://localhost:8000/attentioncompany/whetherattention
     @RequestMapping(value = "/whetherattention", method = RequestMethod.POST)
     @ResponseBody
     public JSONObject whetherattention(@RequestParam("userid") String userid,
                                        @RequestParam("company") String company){
         Integer userid1 = Integer.parseInt(userid);
         JSONObject resp = new JSONObject();
-        QueryWrapper<AttentionCompany> queryWrapper2 = new QueryWrapper<>();
-        queryWrapper2.eq("userid",userid1);
-        queryWrapper2.eq("company",company);
-        List<AttentionCompany> attentionCompanies = attentionCompanyMapper.selectList(queryWrapper2);
+        Query query = Query.query(Criteria.where("userid").is(userid1).and("company").is(company));
+        List<AttentionCompany> attentionCompanies = mongoTemplate.find(query,AttentionCompany.class);
         if(attentionCompanies.size()==0){
             resp.put("state","200");
             resp.put("remind","该company还未关注");

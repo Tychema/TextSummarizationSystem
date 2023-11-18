@@ -1,41 +1,39 @@
 package ynu.edu.textsummarizationsystem.beans;
 
-import javax.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 
-@Entity
-@Table(name = "news")
+@Document(collection="news")
+@TypeAlias("")
 public class News implements Serializable {
-  private static final long serialVersionUID = 1L;
   @Id
-  @GeneratedValue(strategy= GenerationType.IDENTITY)
-  private long id;
-  @Column(name = "title")
+  private Integer id;
   private String title;
-  @Column(name = "url")
   private String url;
-  @Column(name = "detail")
   private String detail;
-  @Column(name = "company")
   private String company;
-  @Column(name = "time")
   private String time;
-  @Column(name = "title2")
   private String title2;
-  @Column(name = "datetime")
   private String datetime;
-  @Column(name = "content")
   private String content;
-  @Column(name = "scores")
   private String scores;
-  @Column(name = "sentiment")
+
+  public int getClick() {
+    return click;
+  }
+
+  public void setClick(int click) {
+    this.click = click;
+  }
+
   private String sentiment;
-  @Column(name = "summary")
   private String summary;
+  private int click;
 
-
-
-  public long getId() {
+  public Integer getId() {
     return id;
   }
 
@@ -137,11 +135,14 @@ public class News implements Serializable {
     this.summary = summary;
   }
 
-  public void setId(Long id) {
+  public void setId(Integer id) {
     this.id = id;
   }
 
-  public News(long id, String title, String url, String detail, String company, String time, String title2, String datetime, String content, String scores, String sentiment, String summary) {
+  public News() {
+  }
+
+  public News(Integer id, String title, String url, String detail, String company, String time, String title2, String datetime, String content, String scores, String sentiment, String summary, int click) {
     this.id = id;
     this.title = title;
     this.url = url;
@@ -154,13 +155,6 @@ public class News implements Serializable {
     this.scores = scores;
     this.sentiment = sentiment;
     this.summary = summary;
+    this.click = click;
   }
-
-  public News() {
-  }
-
-  public void setId(long id) {
-    this.id = id;
-  }
-
 }

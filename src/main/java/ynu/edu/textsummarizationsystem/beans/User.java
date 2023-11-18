@@ -1,67 +1,80 @@
 package ynu.edu.textsummarizationsystem.beans;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
 
 
-@Entity
-@Table(name = "user")
+@Document(collection="user")
+@TypeAlias("")
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private Long userid;
-    @Column(name = "username")
+    private int id;
     private String username;
-    @Column(name = "password")
     private String password;
-    @Column(name = "management")
     private  int management;
 
     public User() {
-        super();
     }
 
-    public User(Long userid,String username, String password,int management) {
-        super();
-        this.userid = userid;
+    public User(int id, String username, String password, int management) {
+        this.id = id;
         this.username = username;
         this.password = password;
         this.management = management;
     }
 
-    public int getManagement(){
-        return  management;
-    }
-    public void setManagement(int management){
-        this.management=management;
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
     }
 
-    public Long getUserId() {
-        return userid;
+    public int getId() {
+        return id;
     }
 
-    public void setId(Long userid) {
-        this.userid = userid;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getUserName() {
+    public String getUsername() {
         return username;
     }
 
-    public void setUserName(String username) {
+    public void setUsername(String username) {
         this.username = username;
     }
 
-    public String getPassWord() {
+    public String getPassword() {
         return password;
     }
 
-    public void setPassWord(String password) {
+    public void setPassword(String password) {
         this.password = password;
     }
 
+    public int getManagement() {
+        return management;
+    }
+
+    public void setManagement(int management) {
+        this.management = management;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", management=" + management +
+                '}';
+    }
 }
